@@ -1,0 +1,17 @@
+name: CI (Flutter Basic Build)
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  mobile-ci:
+    uses: gk182/ci-templates/.github/workflows/mobile-ci.yml@main
+    with:
+      project_type: flutter
+      flutter_version: "3.44.8"
+      build_ios: false
+      run_deploy: false
+    secrets: inherit
