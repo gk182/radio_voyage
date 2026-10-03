@@ -1,0 +1,39 @@
+name: radio_voyage
+description: "RadioVoyage: Interactive 3D Cyberpunk Earth Radio & Frequency Scanner"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  flutter_earth_globe: ^1.0.7
+  provider: ^6.1.2
+  just_audio: ^0.9.40
+  http: ^1.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/
+    - assets/data/
+    - assets/logo/
+    - assets/earth_night.jpg
+    - assets/earth_day.jpg
+    - assets/stars.jpg
+
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Variable.ttf
