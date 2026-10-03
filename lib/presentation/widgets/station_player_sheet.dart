@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_theme.dart';
 import '../providers/radio_globe_provider.dart';
 
 class StationPlayerSheet extends StatelessWidget {
@@ -12,6 +13,7 @@ class StationPlayerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Consumer<RadioGlobeProvider>(
       builder: (context, provider, child) {
         final station = provider.selectedStation;
@@ -27,10 +29,10 @@ class StationPlayerSheet extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 16),
           padding: const EdgeInsets.fromLTRB(15, 14, 15, 11),
           decoration: BoxDecoration(
-            color: AppColors.card.withOpacity(.98),
+            color: palette.card.withOpacity(.98),
             borderRadius: BorderRadius.circular(AppRadii.card),
-            border: Border.all(color: Colors.white.withOpacity(.8)),
-            boxShadow: AppShadows.soft,
+            border: Border.all(color: palette.cardBorder),
+            boxShadow: palette.softShadow,
           ),
           child: Column(
             children: [
@@ -58,7 +60,7 @@ class StationPlayerSheet extends StatelessWidget {
                               height: 7,
                               decoration: BoxDecoration(
                                 color: provider.playbackError == null
-                                    ? AppColors.activeOrange
+                                    ? palette.accent
                                     : AppColors.error,
                                 shape: BoxShape.circle,
                               ),
@@ -66,8 +68,8 @@ class StationPlayerSheet extends StatelessWidget {
                             const SizedBox(width: 7),
                             Text(
                               statusText,
-                              style: const TextStyle(
-                                color: AppColors.activeOrange,
+                              style: TextStyle(
+                                color: palette.accent,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 1.15,
@@ -84,11 +86,12 @@ class StationPlayerSheet extends StatelessWidget {
                           station.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             height: 1.05,
                             fontWeight: FontWeight.w700,
                             letterSpacing: -.35,
+                            color: palette.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -96,8 +99,8 @@ class StationPlayerSheet extends StatelessWidget {
                           '${station.country}  •  ${_shortTags(station.tags)}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
+                          style: TextStyle(
+                            color: palette.textSecondary,
                             fontSize: 10.5,
                             height: 1.2,
                           ),
@@ -119,15 +122,18 @@ class StationPlayerSheet extends StatelessWidget {
                         ? CupertinoIcons.heart_fill
                         : CupertinoIcons.heart,
                     color: provider.isFavorite
-                        ? AppColors.activeOrange
-                        : AppColors.textPrimary,
+                        ? palette.accent
+                        : palette.textPrimary,
                     onTap: provider.toggleFavorite,
                   ),
                   IconButton(
                     tooltip: 'Previous station',
                     onPressed: () => provider.skipStation(-1),
-                    icon:
-                        const Icon(CupertinoIcons.backward_end_fill, size: 20),
+                    icon: Icon(
+                      CupertinoIcons.backward_end_fill,
+                      size: 20,
+                      color: palette.textPrimary,
+                    ),
                   ),
                   Semantics(
                     button: true,
@@ -139,14 +145,15 @@ class StationPlayerSheet extends StatelessWidget {
                       child: Container(
                         width: 54,
                         height: 54,
-                        decoration: const BoxDecoration(
-                          color: AppColors.activeOrange,
+                        decoration: BoxDecoration(
+                          color: palette.accent,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                                color: Color(0x35FF6B3D),
-                                blurRadius: 18,
-                                offset: Offset(0, 8)),
+                              color: palette.accent.withOpacity(0.38),
+                              blurRadius: 18,
+                              offset: const Offset(0, 8),
+                            ),
                           ],
                         ),
                         child: provider.isBuffering
@@ -165,7 +172,11 @@ class StationPlayerSheet extends StatelessWidget {
                   IconButton(
                     tooltip: 'Next station',
                     onPressed: () => provider.skipStation(1),
-                    icon: const Icon(CupertinoIcons.forward_end_fill, size: 20),
+                    icon: Icon(
+                      CupertinoIcons.forward_end_fill,
+                      size: 20,
+                      color: palette.textPrimary,
+                    ),
                   ),
                   _RoundControl(
                     tooltip: provider.isMuted ? 'Unmute' : 'Mute',
@@ -182,8 +193,8 @@ class StationPlayerSheet extends StatelessWidget {
                 child: LinearProgressIndicator(
                   minHeight: 4,
                   value: provider.isPlaying ? .3 : .0,
-                  color: AppColors.activeOrange,
-                  backgroundColor: AppColors.surface,
+                  color: palette.accent,
+                  backgroundColor: palette.surface,
                 ),
               ),
             ],
@@ -210,25 +221,30 @@ class _FrequencyBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Container(
       constraints: const BoxConstraints(maxWidth: 82),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(.7),
+        color: palette.surface.withOpacity(.7),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.signal_cellular_alt_rounded, size: 13),
+          Icon(Icons.signal_cellular_alt_rounded,
+              size: 13, color: palette.accent),
           const SizedBox(width: 4),
           Flexible(
             child: Text(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style:
-                  const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontSize: 9.5,
+                fontWeight: FontWeight.w600,
+                color: palette.textPrimary,
+              ),
             ),
           ),
         ],
@@ -242,16 +258,18 @@ class _RoundControl extends StatelessWidget {
     required this.tooltip,
     required this.icon,
     required this.onTap,
-    this.color = AppColors.textPrimary,
+    this.color,
   });
 
   final String tooltip;
   final IconData icon;
   final VoidCallback onTap;
-  final Color color;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
+    final iconColor = color ?? palette.textPrimary;
     return Tooltip(
       message: tooltip,
       child: InkResponse(
@@ -260,12 +278,13 @@ class _RoundControl extends StatelessWidget {
         child: Container(
           width: 42,
           height: 42,
-          decoration: const BoxDecoration(
-            color: AppColors.card,
+          decoration: BoxDecoration(
+            color: palette.card,
             shape: BoxShape.circle,
-            boxShadow: AppShadows.control,
+            border: Border.all(color: palette.cardBorder),
+            boxShadow: palette.controlShadow,
           ),
-          child: Icon(icon, size: 20, color: color),
+          child: Icon(icon, size: 20, color: iconColor),
         ),
       ),
     );

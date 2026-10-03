@@ -6,7 +6,7 @@ import 'package:flutter_earth_globe/globe_coordinates.dart';
 import 'package:flutter_earth_globe/point.dart';
 import 'package:flutter_earth_globe/sphere_style.dart';
 
-import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_theme.dart';
 import '../../data/models/curated_stations.dart';
 import '../../data/models/radio_station.dart';
 import '../../data/services/audio_player_service.dart';
@@ -20,19 +20,19 @@ class RadioGlobeProvider extends ChangeNotifier {
       minZoom: 0.1,
       maxZoom: 0.8,
       isRotating: false,
-      surface: Image.asset('assets/earth_day.png').image,
+      surface: Image.asset('assets/earth_night.png').image,
       sphereStyle: const SphereStyle(
         showShadow: true,
-        shadowColor: Color(0x597AA9D3),
-        shadowBlurSigma: 18,
+        shadowColor: Color(0x80101722),
+        shadowBlurSigma: 20,
         showGradientOverlay: true,
         gradientOverlay: RadialGradient(
           center: Alignment(-0.28, -0.38),
           radius: 0.95,
           colors: [
-            Color(0x2AFFFFFF),
+            Color(0x207AA9D3),
             Color(0x00FFFFFF),
-            Color(0x330C2436),
+            Color(0x66101722),
           ],
           stops: [0, 0.64, 1],
         ),
@@ -51,7 +51,10 @@ class RadioGlobeProvider extends ChangeNotifier {
   RadioStation? _selectedStation;
   bool _isGlobeInitialized = false;
   bool _isLoadingStations = false;
-  bool _isNightMode = false;
+  bool _isNightMode = true;
+  ThemeMode _themeMode = ThemeMode.dark;
+  CockpitAccent _accent = CockpitAccent.solar;
+  bool _syncGlobeWithTheme = true;
   String _selectedRegion = 'All';
 
   FlutterEarthGlobeController get globeController => _globeController;
@@ -60,6 +63,10 @@ class RadioGlobeProvider extends ChangeNotifier {
   bool get isGlobeInitialized => _isGlobeInitialized;
   bool get isLoadingStations => _isLoadingStations;
   bool get isNightMode => _isNightMode;
+  ThemeMode get themeMode => _themeMode;
+  bool get isDarkMode => _themeMode == ThemeMode.dark;
+  CockpitAccent get accent => _accent;
+  bool get syncGlobeWithTheme => _syncGlobeWithTheme;
   bool get isRotating => _globeController.isRotating;
   StreamPlaybackStatus get playbackStatus => _audioService.status;
   bool get isPlaying => _audioService.isPlaying;
@@ -187,6 +194,8 @@ class RadioGlobeProvider extends ChangeNotifier {
 
   void _refreshGlobePoints() {
     if (!_isGlobeInitialized) return;
+    final primaryColor = _accent.primary;
+    final secondaryColor = _accent.secondary.withOpacity(0.85);
     _globeController.points = _visibleStations.map((station) {
       final selected = station.id == _selectedStation?.id;
       return Point(
@@ -195,7 +204,7 @@ class RadioGlobeProvider extends ChangeNotifier {
         isLabelVisible: selected,
         labelOffset: const Offset(-76, -72),
         style: PointStyle(
-          color: selected ? AppColors.activeOrange : const Color(0xFFFF9C63),
+          color: selected ? primaryColor : secondaryColor,
           size: selected ? 10 : 4.2,
         ),
         labelBuilder: selected
@@ -291,14 +300,49 @@ class RadioGlobeProvider extends ChangeNotifier {
     _audioService.toggleMute();
   }
 
-  void toggleNightDayMode() {
-    _isNightMode = !_isNightMode;
+  void setThemeMode(ThemeMode mode) {
+    if (_themeMode == mode) return;
+    _themeMode = mode;
+    if (_syncGlobeWithTheme) {
+      if (mode == ThemeMode.dark && !_isNightMode) {
+        setNightMode(true);
+      } else if (mode == ThemeMode.light && _isNightMode) {
+        setNightMode(false);
+      }
+    }
+    notifyListeners();
+  }
+
+  void toggleTheme() {
+    setThemeMode(
+        _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark);
+  }
+
+  void setCockpitAccent(CockpitAccent newAccent) {
+    if (_accent == newAccent) return;
+    _accent = newAccent;
+    _refreshGlobePoints();
+    notifyListeners();
+  }
+
+  void toggleSyncGlobeWithTheme() {
+    _syncGlobeWithTheme = !_syncGlobeWithTheme;
+    notifyListeners();
+  }
+
+  void setNightMode(bool night) {
+    if (_isNightMode == night) return;
+    _isNightMode = night;
     _globeController.loadSurface(
       Image.asset(
               _isNightMode ? 'assets/earth_night.png' : 'assets/earth_day.png')
           .image,
     );
     notifyListeners();
+  }
+
+  void toggleNightDayMode() {
+    setNightMode(!_isNightMode);
   }
 
   void toggleRotation() {
@@ -340,13 +384,15 @@ class _StationGlobeLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Container(
       width: 154,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
-        color: AppColors.card.withOpacity(.96),
+        color: palette.card.withOpacity(.96),
         borderRadius: BorderRadius.circular(12),
-        boxShadow: AppShadows.control,
+        border: Border.all(color: palette.cardBorder),
+        boxShadow: palette.controlShadow,
       ),
       child: Row(
         children: [
@@ -362,15 +408,17 @@ class _StationGlobeLabel extends StatelessWidget {
                   station.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      fontSize: 11, fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: palette.textPrimary),
                 ),
                 Text(
                   station.country,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      fontSize: 9, color: AppColors.textSecondary),
+                  style: TextStyle(
+                      fontSize: 9, color: palette.textSecondary),
                 ),
               ],
             ),

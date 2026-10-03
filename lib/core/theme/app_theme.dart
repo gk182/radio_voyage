@@ -1,34 +1,65 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import 'app_palette.dart';
+import 'cockpit_accent.dart';
+
+export 'app_palette.dart';
+export 'cockpit_accent.dart';
 
 abstract final class AppTheme {
-  static ThemeData get lightTheme {
-    final textTheme = ThemeData.light().textTheme.apply(
-        bodyColor: AppColors.textPrimary, displayColor: AppColors.textPrimary);
+  static ThemeData get darkTheme => buildTheme(
+        brightness: Brightness.dark,
+        accent: CockpitAccent.solar,
+      );
+
+  static ThemeData get lightTheme => buildTheme(
+        brightness: Brightness.light,
+        accent: CockpitAccent.solar,
+      );
+
+  static ThemeData buildTheme({
+    required Brightness brightness,
+    CockpitAccent accent = CockpitAccent.solar,
+  }) {
+    final isDark = brightness == Brightness.dark;
+    final palette =
+        isDark ? AppPalette.dark(accent) : AppPalette.light(accent);
+
+    final baseTextTheme =
+        isDark ? ThemeData.dark().textTheme : ThemeData.light().textTheme;
+    final textTheme = baseTextTheme.apply(
+      bodyColor: palette.textPrimary,
+      displayColor: palette.textPrimary,
+      fontFamily: 'Inter',
+    );
 
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.light,
-      scaffoldBackgroundColor: AppColors.canvas,
-      colorScheme: const ColorScheme.light(
-        primary: AppColors.activeOrange,
-        secondary: AppColors.orbitBlue,
-        surface: AppColors.card,
+      brightness: brightness,
+      scaffoldBackgroundColor: palette.canvas,
+      cardColor: palette.card,
+      colorScheme: ColorScheme(
+        brightness: brightness,
+        primary: palette.accent,
+        onPrimary: Colors.white,
+        secondary: palette.accentSecondary,
+        onSecondary: Colors.white,
         error: AppColors.error,
-        onSurface: AppColors.textPrimary,
+        onError: Colors.white,
+        surface: palette.card,
+        onSurface: palette.textPrimary,
       ),
       textTheme: textTheme,
+      extensions: <ThemeExtension<dynamic>>[palette],
       splashFactory: InkSparkle.splashFactory,
-      bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor: AppColors.canvas,
-        modalBackgroundColor: AppColors.canvas,
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: palette.canvas,
+        modalBackgroundColor: palette.canvas,
         surfaceTintColor: Colors.transparent,
       ),
-      iconTheme: const IconThemeData(color: AppColors.textPrimary),
-      dividerColor: AppColors.divider,
+      iconTheme: IconThemeData(color: palette.textPrimary),
+      dividerColor: palette.divider,
       fontFamily: 'Inter',
     );
   }
-
-  static ThemeData get darkTheme => lightTheme;
 }

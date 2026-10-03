@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_theme.dart';
 import '../../data/models/radio_station.dart';
 import '../providers/radio_globe_provider.dart';
 import '../widgets/globe_3d_viewport.dart';
@@ -56,10 +57,11 @@ class _RadioVoyageScreenState extends State<RadioVoyageScreen> {
 
   Future<void> _showFavorites() {
     final provider = context.read<RadioGlobeProvider>();
+    final palette = context.palette;
     return showModalBottomSheet<void>(
       context: context,
       useSafeArea: true,
-      backgroundColor: AppColors.canvas,
+      backgroundColor: palette.canvas,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -76,60 +78,235 @@ class _RadioVoyageScreenState extends State<RadioVoyageScreen> {
   }
 
   Future<void> _showSettings() {
+    final palette = context.palette;
     return showModalBottomSheet<void>(
       context: context,
       useSafeArea: true,
-      backgroundColor: AppColors.canvas,
+      backgroundColor: palette.canvas,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (sheetContext) => Consumer<RadioGlobeProvider>(
-        builder: (context, provider, child) => Padding(
-          padding: const EdgeInsets.fromLTRB(24, 14, 24, 30),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const _SheetHandle(),
-              const SizedBox(height: 22),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text('Settings',
-                    style:
-                        TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
-              ),
-              const SizedBox(height: 16),
-              SwitchListTile.adaptive(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Night globe texture'),
-                subtitle: const Text('Show illuminated cities on Earth'),
-                value: provider.isNightMode,
-                activeTrackColor: AppColors.activeOrange,
-                onChanged: (_) => provider.toggleNightDayMode(),
-              ),
-              SwitchListTile.adaptive(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Automatic globe rotation'),
-                value: provider.isRotating,
-                activeTrackColor: AppColors.activeOrange,
-                onChanged: (_) => provider.toggleRotation(),
-              ),
-            ],
-          ),
-        ),
+        builder: (context, provider, child) {
+          final palette = context.palette;
+          return SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 14, 24, 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Center(child: _SheetHandle()),
+                const SizedBox(height: 20),
+                Text(
+                  'Settings & Appearance',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: palette.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 18),
+
+                // Theme Mode Section
+                Text(
+                  'THEME MODE',
+                  style: TextStyle(
+                    fontSize: 11,
+                    letterSpacing: 1.5,
+                    fontWeight: FontWeight.w600,
+                    color: palette.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    _ThemeModeOption(
+                      icon: CupertinoIcons.moon_stars_fill,
+                      label: 'Dark Orbit',
+                      selected: provider.themeMode == ThemeMode.dark,
+                      onTap: () => provider.setThemeMode(ThemeMode.dark),
+                    ),
+                    const SizedBox(width: 10),
+                    _ThemeModeOption(
+                      icon: CupertinoIcons.sun_max_fill,
+                      label: 'Solar Light',
+                      selected: provider.themeMode == ThemeMode.light,
+                      onTap: () => provider.setThemeMode(ThemeMode.light),
+                    ),
+                    const SizedBox(width: 10),
+                    _ThemeModeOption(
+                      icon: CupertinoIcons.device_phone_portrait,
+                      label: 'System',
+                      selected: provider.themeMode == ThemeMode.system,
+                      onTap: () => provider.setThemeMode(ThemeMode.system),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // Cockpit Accent Section
+                Text(
+                  'COCKPIT ACCENT COLOR',
+                  style: TextStyle(
+                    fontSize: 11,
+                    letterSpacing: 1.5,
+                    fontWeight: FontWeight.w600,
+                    color: palette.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: CockpitAccent.values.map((accent) {
+                      final selected = provider.accent == accent;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: InkWell(
+                          onTap: () => provider.setCockpitAccent(accent),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: selected
+                                  ? accent.primary.withOpacity(0.18)
+                                  : palette.card,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: selected
+                                    ? accent.primary
+                                    : palette.divider,
+                                width: selected ? 1.8 : 1.0,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 14,
+                                  height: 14,
+                                  decoration: BoxDecoration(
+                                    color: accent.primary,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: accent.primary.withOpacity(0.4),
+                                        blurRadius: 4,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  accent.label,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: selected
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
+                                    color: selected
+                                        ? accent.primary
+                                        : palette.textPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // 3D Globe Section
+                Text(
+                  '3D GLOBE CONTROLS',
+                  style: TextStyle(
+                    fontSize: 11,
+                    letterSpacing: 1.5,
+                    fontWeight: FontWeight.w600,
+                    color: palette.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                SwitchListTile.adaptive(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    'Sync Earth texture with theme',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: palette.textPrimary,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Auto-switch night/day lights according to theme mode',
+                    style: TextStyle(color: palette.textSecondary),
+                  ),
+                  value: provider.syncGlobeWithTheme,
+                  activeTrackColor: palette.accent,
+                  onChanged: (_) => provider.toggleSyncGlobeWithTheme(),
+                ),
+                SwitchListTile.adaptive(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    'Night globe texture',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: palette.textPrimary,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Show city night lights on Earth surface',
+                    style: TextStyle(color: palette.textSecondary),
+                  ),
+                  value: provider.isNightMode,
+                  activeTrackColor: palette.accent,
+                  onChanged: (_) => provider.toggleNightDayMode(),
+                ),
+                SwitchListTile.adaptive(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    'Automatic globe rotation',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: palette.textPrimary,
+                    ),
+                  ),
+                  value: provider.isRotating,
+                  activeTrackColor: palette.accent,
+                  onChanged: (_) => provider.toggleRotation(),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      systemNavigationBarColor: palette.bottomNav,
+      systemNavigationBarIconBrightness:
+          isDark ? Brightness.light : Brightness.dark,
+    ));
+
     return Scaffold(
-      backgroundColor: AppColors.canvas,
+      backgroundColor: palette.canvas,
       body: DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: RadialGradient(
-            center: Alignment(.72, -.55),
+            center: const Alignment(.72, -.55),
             radius: 1.1,
-            colors: [Color(0xFFFFFBF5), AppColors.canvas],
+            colors: [palette.canvasHighlight, palette.canvas],
           ),
         ),
         child: SafeArea(
@@ -161,12 +338,70 @@ class _RadioVoyageScreenState extends State<RadioVoyageScreen> {
   }
 }
 
+class _ThemeModeOption extends StatelessWidget {
+  const _ThemeModeOption({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: selected ? palette.accent.withOpacity(0.18) : palette.card,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: selected ? palette.accent : palette.divider,
+              width: selected ? 1.8 : 1.0,
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                size: 20,
+                color: selected ? palette.accent : palette.textSecondary,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  color: selected ? palette.accent : palette.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _Header extends StatelessWidget {
   const _Header({required this.onSearch});
   final VoidCallback onSearch;
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return SizedBox(
       height: 112,
       child: Padding(
@@ -175,20 +410,20 @@ class _Header extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'RADIO VOYAGE',
                     style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: palette.textSecondary,
                       fontSize: 10.5,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 2.4,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
@@ -200,6 +435,7 @@ class _Header extends StatelessWidget {
                         height: 1.08,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -.8,
+                        color: palette.textPrimary,
                       ),
                     ),
                   ),
@@ -211,6 +447,7 @@ class _Header extends StatelessWidget {
                       height: 1.08,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -.8,
+                      color: palette.textPrimary,
                     ),
                   ),
                 ],
@@ -234,6 +471,7 @@ class _ActiveStationBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Consumer<RadioGlobeProvider>(
       builder: (context, provider, child) {
         final station = provider.selectedStation;
@@ -242,26 +480,26 @@ class _ActiveStationBanner extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: AppColors.card.withOpacity(.94),
+            color: palette.card.withOpacity(.94),
             borderRadius: BorderRadius.circular(AppRadii.banner),
-            border: Border.all(color: Colors.white.withOpacity(.85)),
-            boxShadow: AppShadows.soft,
+            border: Border.all(color: palette.cardBorder),
+            boxShadow: palette.softShadow,
           ),
           child: Row(
             children: [
-              const SizedBox(
+              SizedBox(
                 width: 15,
                 height: 15,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                      color: AppColors.activeOrange, shape: BoxShape.circle),
+                      color: palette.accent, shape: BoxShape.circle),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: station == null
-                    ? const Text('Finding radio beacons…',
-                        style: TextStyle(color: AppColors.textSecondary))
+                    ? Text('Finding radio beacons…',
+                        style: TextStyle(color: palette.textSecondary))
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -270,16 +508,21 @@ class _ActiveStationBanner extends StatelessWidget {
                             station.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontSize: 13.5, fontWeight: FontWeight.w700),
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
+                              color: palette.textPrimary,
+                            ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             '${station.country}  •  ${_shortFrequency(station.frequencyLabel, station.bitrate)}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontSize: 10.5, color: AppColors.textSecondary),
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              color: palette.textSecondary,
+                            ),
                           ),
                         ],
                       ),
@@ -288,20 +531,20 @@ class _ActiveStationBanner extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppColors.peach,
+                  color: palette.badgeBackground,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.signal_cellular_alt_rounded,
-                        size: 13, color: AppColors.activeOrange),
+                    Icon(Icons.signal_cellular_alt_rounded,
+                        size: 13, color: palette.accent),
                     const SizedBox(width: 5),
                     Text(
                       '${provider.stations.length} BEACONS',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 9.5,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.activeOrange,
+                        color: palette.accent,
                       ),
                     ),
                   ],
@@ -328,7 +571,9 @@ class _GlobeStage extends StatelessWidget {
     return Consumer<RadioGlobeProvider>(
       builder: (context, provider, child) => Stack(
         children: [
-          const Positioned.fill(child: Globe3dViewport()),
+          const Positioned.fill(
+            child: ClipRect(child: Globe3dViewport()),
+          ),
           Positioned(
             top: 16,
             right: 14,
@@ -336,10 +581,23 @@ class _GlobeStage extends StatelessWidget {
               children: [
                 _SurfaceButton(
                   size: 40,
+                  icon: provider.isDarkMode
+                      ? CupertinoIcons.sun_max_fill
+                      : CupertinoIcons.moon_stars_fill,
+                  tooltip: provider.isDarkMode
+                      ? 'Switch to Light theme'
+                      : 'Switch to Dark theme',
+                  onTap: provider.toggleTheme,
+                ),
+                const SizedBox(height: 9),
+                _SurfaceButton(
+                  size: 40,
                   icon: provider.isNightMode
-                      ? CupertinoIcons.moon_stars
-                      : CupertinoIcons.sun_max,
-                  tooltip: 'Change Earth display mode',
+                      ? CupertinoIcons.globe
+                      : CupertinoIcons.circle_grid_hex,
+                  tooltip: provider.isNightMode
+                      ? 'Earth: Night lights (tap for Day map)'
+                      : 'Earth: Day map (tap for Night lights)',
                   onTap: provider.toggleNightDayMode,
                 ),
                 const SizedBox(height: 9),
@@ -387,6 +645,7 @@ class _SurfaceButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Tooltip(
       message: tooltip,
       child: Semantics(
@@ -401,12 +660,13 @@ class _SurfaceButton extends StatelessWidget {
           child: Container(
             width: size,
             height: size,
-            decoration: const BoxDecoration(
-              color: AppColors.card,
+            decoration: BoxDecoration(
+              color: palette.card,
               shape: BoxShape.circle,
-              boxShadow: AppShadows.control,
+              border: Border.all(color: palette.cardBorder),
+              boxShadow: palette.controlShadow,
             ),
-            child: Icon(icon, size: size * .43),
+            child: Icon(icon, size: size * .43, color: palette.textPrimary),
           ),
         ),
       ),
@@ -419,6 +679,7 @@ class _RegionFilters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Consumer<RadioGlobeProvider>(
       builder: (context, provider, child) => SizedBox(
         height: 40,
@@ -438,14 +699,14 @@ class _RegionFilters extends StatelessWidget {
               onSelected: (_) => provider.setRegion(region),
               padding: const EdgeInsets.symmetric(horizontal: 8),
               labelStyle: TextStyle(
-                color: selected ? Colors.white : AppColors.textPrimary,
+                color: selected ? Colors.white : palette.textPrimary,
                 fontSize: 10.5,
                 fontWeight: FontWeight.w500,
               ),
-              backgroundColor: AppColors.card,
-              selectedColor: AppColors.night,
+              backgroundColor: palette.card,
+              selectedColor: palette.accent,
               side: BorderSide(
-                  color: selected ? AppColors.night : AppColors.divider),
+                  color: selected ? palette.accent : palette.divider),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadii.chip)),
               elevation: selected ? 2 : 0,
@@ -464,6 +725,7 @@ class _BottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     const items = <(IconData, String)>[
       (CupertinoIcons.globe, 'Explore'),
       (CupertinoIcons.antenna_radiowaves_left_right, 'Stations'),
@@ -472,9 +734,9 @@ class _BottomNavigation extends StatelessWidget {
     ];
     return Container(
       height: 76,
-      decoration: const BoxDecoration(
-        color: Color(0xEFFFFFFF),
-        border: Border(top: BorderSide(color: AppColors.divider, width: .6)),
+      decoration: BoxDecoration(
+        color: palette.bottomNav,
+        border: Border(top: BorderSide(color: palette.divider, width: .6)),
       ),
       child: Row(
         children: List.generate(items.length, (index) {
@@ -488,17 +750,14 @@ class _BottomNavigation extends StatelessWidget {
                   Icon(
                     items[index].$1,
                     size: 23,
-                    color:
-                        selected ? AppColors.activeOrange : AppColors.textMuted,
+                    color: selected ? palette.accent : palette.textMuted,
                   ),
                   const SizedBox(height: 6),
                   Text(
                     items[index].$2,
                     style: TextStyle(
                       fontSize: 10.5,
-                      color: selected
-                          ? AppColors.activeOrange
-                          : AppColors.textSecondary,
+                      color: selected ? palette.accent : palette.textSecondary,
                       fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                     ),
                   ),
@@ -527,6 +786,7 @@ class _StationListSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return SizedBox(
       height: 420,
       child: Column(
@@ -537,9 +797,14 @@ class _StationListSheet extends StatelessWidget {
             padding: const EdgeInsets.all(22),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Text(title,
-                  style: const TextStyle(
-                      fontSize: 24, fontWeight: FontWeight.w700)),
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: palette.textPrimary,
+                ),
+              ),
             ),
           ),
           Expanded(
@@ -547,10 +812,11 @@ class _StationListSheet extends StatelessWidget {
                 ? Center(
                     child: Padding(
                       padding: const EdgeInsets.all(36),
-                      child: Text(emptyMessage,
-                          textAlign: TextAlign.center,
-                          style:
-                              const TextStyle(color: AppColors.textSecondary)),
+                      child: Text(
+                        emptyMessage,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: palette.textSecondary),
+                      ),
                     ),
                   )
                 : ListView.builder(
@@ -560,15 +826,26 @@ class _StationListSheet extends StatelessWidget {
                       return ListTile(
                         contentPadding:
                             const EdgeInsets.symmetric(horizontal: 22),
-                        leading: const CircleAvatar(
-                          backgroundColor: AppColors.peach,
+                        leading: CircleAvatar(
+                          backgroundColor: palette.badgeBackground,
                           child: Icon(
-                              CupertinoIcons.antenna_radiowaves_left_right,
-                              color: AppColors.activeOrange),
+                            CupertinoIcons.antenna_radiowaves_left_right,
+                            color: palette.accent,
+                          ),
                         ),
-                        title: Text(station.name,
-                            maxLines: 1, overflow: TextOverflow.ellipsis),
-                        subtitle: Text(station.country),
+                        title: Text(
+                          station.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: palette.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        subtitle: Text(
+                          station.country,
+                          style: TextStyle(color: palette.textSecondary),
+                        ),
                         onTap: () => onSelect(station),
                       );
                     },
@@ -585,11 +862,14 @@ class _SheetHandle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Container(
       width: 42,
       height: 4,
       decoration: BoxDecoration(
-          color: AppColors.divider, borderRadius: BorderRadius.circular(2)),
+        color: palette.divider,
+        borderRadius: BorderRadius.circular(2),
+      ),
     );
   }
 }

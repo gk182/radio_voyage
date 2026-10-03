@@ -16,8 +16,9 @@ void main() {
   Future<void> renderAt(
     WidgetTester tester,
     Size size,
-    String goldenName,
-  ) async {
+    String goldenName, {
+    bool zoomToMax = false,
+  }) async {
     await tester.binding.setSurfaceSize(size);
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
@@ -25,7 +26,9 @@ void main() {
         create: (_) => RadioGlobeProvider(),
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
+          theme: AppTheme.darkTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeMode.dark,
           home: const RadioVoyageScreen(),
         ),
       ),
@@ -43,6 +46,9 @@ void main() {
       );
       if (provider.globeController.surfaceProcessed != null &&
           provider.selectedStation != null) {
+        if (zoomToMax) {
+          provider.globeController.setZoom(provider.globeController.maxZoom);
+        }
         await tester.pump(const Duration(milliseconds: 250));
         await tester.runAsync(
           () => Future<void>.delayed(const Duration(seconds: 2)),
@@ -83,4 +89,13 @@ void main() {
       'Radio Voyage remains overflow-free on a compact viewport',
       (tester) =>
           renderAt(tester, const Size(360, 740), 'radio_voyage_360x740'));
+
+  testWidgets('Globe remains circular at maximum zoom', (tester) {
+    return renderAt(
+      tester,
+      const Size(390, 844),
+      'radio_voyage_max_zoom_390x844',
+      zoomToMax: true,
+    );
+  });
 }

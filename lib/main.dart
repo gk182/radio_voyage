@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'core/theme/app_theme.dart';
 import 'presentation/providers/radio_globe_provider.dart';
 import 'presentation/screens/radio_voyage_screen.dart';
@@ -16,12 +17,26 @@ class RadioVoyageApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => RadioGlobeProvider(),
-      child: MaterialApp(
-        title: 'Radio Voyage',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        themeMode: ThemeMode.light,
-        home: const RadioVoyageScreen(),
+      child: Consumer<RadioGlobeProvider>(
+        builder: (context, provider, child) {
+          final darkTheme = AppTheme.buildTheme(
+            brightness: Brightness.dark,
+            accent: provider.accent,
+          );
+          final lightTheme = AppTheme.buildTheme(
+            brightness: Brightness.light,
+            accent: provider.accent,
+          );
+
+          return MaterialApp(
+            title: 'Radio Voyage',
+            debugShowCheckedModeBanner: false,
+            theme: lightTheme,
+            darkTheme: darkTheme,
+            themeMode: provider.themeMode,
+            home: const RadioVoyageScreen(),
+          );
+        },
       ),
     );
   }

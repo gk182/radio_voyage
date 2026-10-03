@@ -27,12 +27,20 @@ class Globe3dViewport extends StatelessWidget {
                     CupertinoActivityIndicator(color: AppColors.primaryOrange),
               );
             }
+            // flutter_earth_globe enlarges the painted sphere by 2^zoom. Give
+            // its rasterizer enough room for maxZoom so the enlarged sphere is
+            // never clipped to the package widget's rectangular bounds.
+            final zoomRange = provider.globeController.maxZoom -
+                provider.globeController.minZoom;
+            final renderSize =
+                (diameter * math.pow(2, zoomRange) + 16).toDouble();
             return Center(
               child: SizedBox(
                 width: diameter,
                 height: diameter,
                 child: Stack(
                   alignment: Alignment.center,
+                  clipBehavior: Clip.none,
                   children: [
                     Transform.translate(
                       offset: Offset(0, diameter * .43),
@@ -53,13 +61,20 @@ class Globe3dViewport extends StatelessWidget {
                       ),
                     ),
                     Positioned.fill(
-                      child: MediaQuery(
-                        data: MediaQuery.of(context).copyWith(
-                          size: Size.square(diameter),
-                        ),
-                        child: FlutterEarthGlobe(
-                          controller: provider.globeController,
-                          radius: radius,
+                      child: OverflowBox(
+                        maxWidth: renderSize,
+                        maxHeight: renderSize,
+                        child: SizedBox.square(
+                          dimension: renderSize,
+                          child: MediaQuery(
+                            data: MediaQuery.of(context).copyWith(
+                              size: Size.square(renderSize),
+                            ),
+                            child: FlutterEarthGlobe(
+                              controller: provider.globeController,
+                              radius: radius,
+                            ),
+                          ),
                         ),
                       ),
                     ),
