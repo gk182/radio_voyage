@@ -16,6 +16,7 @@ dependencies:
   provider: ^6.1.2
   just_audio: ^0.9.40
   http: ^1.2.1
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -37,3 +38,14 @@ flutter:
     - family: Inter
       fonts:
         - asset: assets/fonts/Inter-Variable.ttf
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+
+  image_path: "assets/logo/logo.png"
+
+  adaptive_icon_background: "#0D0F1A"
+  adaptive_icon_foreground: "assets/logo/logo.png"
+
+  remove_alpha_ios: true
