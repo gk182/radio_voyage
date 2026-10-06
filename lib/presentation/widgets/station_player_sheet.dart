@@ -24,18 +24,19 @@ class StationPlayerSheet extends StatelessWidget {
                 ? 'CONNECTING'
                 : 'LIVE NOW';
 
-        return Container(
-          height: 170,
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          padding: const EdgeInsets.fromLTRB(15, 14, 15, 11),
-          decoration: BoxDecoration(
-            color: palette.card.withOpacity(.98),
-            borderRadius: BorderRadius.circular(AppRadii.card),
-            border: Border.all(color: palette.cardBorder),
-            boxShadow: palette.softShadow,
-          ),
-          child: Column(
-            children: [
+        return RepaintBoundary(
+          child: Container(
+            height: 170,
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.fromLTRB(15, 14, 15, 11),
+            decoration: BoxDecoration(
+              color: palette.card.withOpacity(.98),
+              borderRadius: BorderRadius.circular(AppRadii.card),
+              border: Border.all(color: palette.cardBorder),
+              boxShadow: palette.softShadow,
+            ),
+            child: Column(
+              children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -45,6 +46,8 @@ class StationPlayerSheet extends StatelessWidget {
                       'assets/logo/logo.png',
                       width: 76,
                       height: 72,
+                      cacheWidth: 152,
+                      cacheHeight: 144,
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -199,7 +202,8 @@ class StationPlayerSheet extends StatelessWidget {
               ),
             ],
           ),
-        );
+        ),
+      );
       },
     );
   }

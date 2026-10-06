@@ -17,15 +17,18 @@ class RadioVoyageApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => RadioGlobeProvider(),
-      child: Consumer<RadioGlobeProvider>(
-        builder: (context, provider, child) {
+      child: Selector<RadioGlobeProvider,
+          ({ThemeMode themeMode, CockpitAccent accent})>(
+        selector: (_, provider) =>
+            (themeMode: provider.themeMode, accent: provider.accent),
+        builder: (context, settings, child) {
           final darkTheme = AppTheme.buildTheme(
             brightness: Brightness.dark,
-            accent: provider.accent,
+            accent: settings.accent,
           );
           final lightTheme = AppTheme.buildTheme(
             brightness: Brightness.light,
-            accent: provider.accent,
+            accent: settings.accent,
           );
 
           return MaterialApp(
@@ -33,10 +36,11 @@ class RadioVoyageApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             theme: lightTheme,
             darkTheme: darkTheme,
-            themeMode: provider.themeMode,
-            home: const RadioVoyageScreen(),
+            themeMode: settings.themeMode,
+            home: child,
           );
         },
+        child: const RadioVoyageScreen(),
       ),
     );
   }

@@ -137,10 +137,9 @@ packages:
   flutter_earth_globe:
     dependency: "direct main"
     description:
-      name: flutter_earth_globe
-      sha256: a0f1b30c686bc36a1a1acc5b3b1846b16fb2e4c19afbb57efdc2281e24adf25e
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/flutter_earth_globe"
+      relative: true
+    source: path
     version: "1.1.0"
   flutter_launcher_icons:
     dependency: "direct main"

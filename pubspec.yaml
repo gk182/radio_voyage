@@ -12,7 +12,8 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
-  flutter_earth_globe: ^1.0.7
+  flutter_earth_globe:
+    path: packages/flutter_earth_globe
   provider: ^6.1.2
   just_audio: ^0.9.40
   http: ^1.2.1

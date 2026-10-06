@@ -20,7 +20,11 @@ class RadioGlobeProvider extends ChangeNotifier {
       minZoom: 0.1,
       maxZoom: 0.8,
       isRotating: false,
-      surface: Image.asset('assets/earth_night.png').image,
+      surface: const ResizeImage(
+        AssetImage('assets/earth_night.jpg'),
+        width: 1024,
+        height: 512,
+      ),
       sphereStyle: const SphereStyle(
         showShadow: true,
         shadowColor: Color(0x80101722),
@@ -334,9 +338,12 @@ class RadioGlobeProvider extends ChangeNotifier {
     if (_isNightMode == night) return;
     _isNightMode = night;
     _globeController.loadSurface(
-      Image.asset(
-              _isNightMode ? 'assets/earth_night.png' : 'assets/earth_day.png')
-          .image,
+      ResizeImage(
+        AssetImage(
+            _isNightMode ? 'assets/earth_night.jpg' : 'assets/earth_day.jpg'),
+        width: 1024,
+        height: 512,
+      ),
     );
     notifyListeners();
   }

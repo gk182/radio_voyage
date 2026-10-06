@@ -472,9 +472,11 @@ class _ActiveStationBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
-    return Consumer<RadioGlobeProvider>(
-      builder: (context, provider, child) {
-        final station = provider.selectedStation;
+    return Selector<RadioGlobeProvider, ({RadioStation? station, int count})>(
+      selector: (_, p) => (station: p.selectedStation, count: p.stations.length),
+      builder: (context, data, child) {
+        final station = data.station;
+        final stationCount = data.count;
         return Container(
           height: 52,
           margin: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
@@ -540,7 +542,7 @@ class _ActiveStationBanner extends StatelessWidget {
                         size: 13, color: palette.accent),
                     const SizedBox(width: 5),
                     Text(
-                      '${provider.stations.length} BEACONS',
+                      '$stationCount BEACONS',
                       style: TextStyle(
                         fontSize: 9.5,
                         fontWeight: FontWeight.w700,
@@ -568,64 +570,69 @@ class _GlobeStage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<RadioGlobeProvider>(
-      builder: (context, provider, child) => Stack(
-        children: [
-          const Positioned.fill(
-            child: ClipRect(child: Globe3dViewport()),
-          ),
-          Positioned(
-            top: 16,
-            right: 14,
-            child: Column(
-              children: [
-                _SurfaceButton(
+    final provider = context.read<RadioGlobeProvider>();
+    return Stack(
+      children: [
+        const Positioned.fill(
+          child: ClipRect(child: Globe3dViewport()),
+        ),
+        Positioned(
+          top: 16,
+          right: 14,
+          child: Column(
+            children: [
+              Selector<RadioGlobeProvider, bool>(
+                selector: (_, p) => p.isDarkMode,
+                builder: (context, isDarkMode, _) => _SurfaceButton(
                   size: 40,
-                  icon: provider.isDarkMode
+                  icon: isDarkMode
                       ? CupertinoIcons.sun_max_fill
                       : CupertinoIcons.moon_stars_fill,
-                  tooltip: provider.isDarkMode
+                  tooltip: isDarkMode
                       ? 'Switch to Light theme'
                       : 'Switch to Dark theme',
                   onTap: provider.toggleTheme,
                 ),
-                const SizedBox(height: 9),
-                _SurfaceButton(
+              ),
+              const SizedBox(height: 9),
+              Selector<RadioGlobeProvider, bool>(
+                selector: (_, p) => p.isNightMode,
+                builder: (context, isNightMode, _) => _SurfaceButton(
                   size: 40,
-                  icon: provider.isNightMode
+                  icon: isNightMode
                       ? CupertinoIcons.globe
                       : CupertinoIcons.circle_grid_hex,
-                  tooltip: provider.isNightMode
+                  tooltip: isNightMode
                       ? 'Earth: Night lights (tap for Day map)'
                       : 'Earth: Day map (tap for Night lights)',
                   onTap: provider.toggleNightDayMode,
                 ),
-                const SizedBox(height: 9),
-                _SurfaceButton(
-                  size: 40,
-                  icon: CupertinoIcons.arrow_2_circlepath,
-                  tooltip: 'Reset globe rotation',
-                  onTap: provider.resetGlobe,
-                ),
-                const SizedBox(height: 9),
-                _SurfaceButton(
-                  size: 40,
-                  icon: CupertinoIcons.sparkles,
-                  tooltip: 'Discover a featured station',
-                  onTap: provider.selectRandomStation,
-                ),
-                const SizedBox(height: 9),
-                _SurfaceButton(
-                  size: 40,
-                  icon: CupertinoIcons.location,
-                  tooltip: 'Go to home region',
-                  onTap: provider.focusHomeLocation,
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 9),
+              _SurfaceButton(
+                size: 40,
+                icon: CupertinoIcons.arrow_2_circlepath,
+                tooltip: 'Reset globe rotation',
+                onTap: provider.resetGlobe,
+              ),
+              const SizedBox(height: 9),
+              _SurfaceButton(
+                size: 40,
+                icon: CupertinoIcons.sparkles,
+                tooltip: 'Discover a featured station',
+                onTap: provider.selectRandomStation,
+              ),
+              const SizedBox(height: 9),
+              _SurfaceButton(
+                size: 40,
+                icon: CupertinoIcons.location,
+                tooltip: 'Go to home region',
+                onTap: provider.focusHomeLocation,
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -680,8 +687,10 @@ class _RegionFilters extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
-    return Consumer<RadioGlobeProvider>(
-      builder: (context, provider, child) => SizedBox(
+    final provider = context.read<RadioGlobeProvider>();
+    return Selector<RadioGlobeProvider, String>(
+      selector: (_, p) => p.selectedRegion,
+      builder: (context, selectedRegion, child) => SizedBox(
         height: 40,
         child: ListView.separated(
           padding: const EdgeInsets.symmetric(
@@ -691,7 +700,7 @@ class _RegionFilters extends StatelessWidget {
           separatorBuilder: (_, __) => const SizedBox(width: 8),
           itemBuilder: (context, index) {
             final region = RadioGlobeProvider.regions[index];
-            final selected = provider.selectedRegion == region;
+            final selected = selectedRegion == region;
             return ChoiceChip(
               label: Text(region),
               selected: selected,
